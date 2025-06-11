@@ -558,6 +558,15 @@ document.getElementById("capacitador-formulario").onsubmit = function(e){
   f.reset(); limpiarFirma("Capacitador");
 };
 
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebarMenu');
+  if (sidebar.classList.contains('show')) {
+    sidebar.classList.remove('show');
+  } else {
+    sidebar.classList.add('show');
+  }
+}
+
 function mostrarAlerta(id, msg, exito) {
   const alerta = document.getElementById(id);
   alerta.textContent = msg;
