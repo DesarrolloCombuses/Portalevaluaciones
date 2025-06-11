@@ -1,0 +1,34 @@
+body { background: #f4f8fb; font-family: 'Roboto', Arial, sans-serif;}
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 250px;
+  background: #6e8698; color: #fff; box-shadow: 2px 0 20px rgba(0,0,0,0.07);
+  z-index: 1050; padding: 32px 16px 16px 16px;
+  display: flex; flex-direction: column; min-height: 100vh; transition: left 0.3s;
+}
+.sidebar .brand { font-size: 1.5rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 32px; text-align: center;}
+.sidebar .nav-link { color: #cfd8dc; font-size: 1.08rem; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; padding: 12px 18px; transition: background .18s;}
+.sidebar .nav-link.active, .sidebar .nav-link:hover { background: #1447a7; color: #fff; font-weight: bold;}
+.sidebar .nav-link i { margin-right: 10px; font-size: 1.2em;}
+.sidebar .logout { margin-top: auto;}
+.content-area { margin-left: 260px; padding: 32px 16px; transition: margin .3s;}
+@media (max-width: 900px) {
+  .sidebar { left: -270px; }
+  .sidebar.show { left: 0;}
+  .content-area { margin-left: 0; padding-top: 70px;}
+  .sidebar-toggler { display: block !important;}
+}
+.sidebar-toggler {
+  display: none; position: fixed; top: 20px; left: 20px; z-index: 1100;
+  background: #eef0f1; border: none; color: #fff; padding: 8px 12px; border-radius: 8px;
+  font-size: 1.4rem; box-shadow: 1px 2px 7px #aaa2;
+}
+.card { border-radius: 1.1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); background: #fff;}
+.required-star {color:red;font-weight:bold;}
+.firma-block {margin-bottom: 24px;}
+canvas {border: 1px solid #063970; border-radius: 10px; background: #fff;}
+.firma-label {font-size: 1rem; margin-bottom: 8px;}
+.firma-actions button {margin-right: 8px;}
+.section-title {font-size: 1.2rem; background: #e3ecfa; color: #063970; font-weight: bold; padding: 10px 16px; border-radius: 0.6rem; margin-bottom: 18px; margin-top: 30px; letter-spacing: 1px;}
+.conteo {font-size: 1.1em; color: #063970; text-align:right;}
+.form-check {margin-bottom: 6px;}
+.pregunta-bloque.error-pregunta {background: #ffe5e5!important; border: 1.5px solid #e90000!important;}

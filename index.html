@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal de Evaluaciones - Combuses S.A</title>
+  <!-- Librerías externas -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Estilos propios -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- LOGIN DE INICIO DE SESIÓN -->
+  <div id="login-panel" style="max-width:380px;margin:70px auto 0 auto;display:block;">
+    <div class="card p-4">
+      <h4 class="mb-3 text-primary text-center"><i class="bi bi-person-circle"></i> Iniciar Sesión plataforma de evaluaciones combuses</h4>
+      <form id="form-login">
+        <div class="mb-3">
+          <label class="form-label">Correo</label>
+          <input type="email" class="form-control" name="correo" required autocomplete="username">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contraseña</label>
+          <input type="password" class="form-control" name="contrasena" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+        <div id="login-alerta" class="alert mt-3" style="display:none;"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Barra lateral y área de contenido, ocultos por defecto -->
+  <nav class="sidebar" id="sidebarMenu" style="display:none;">
+    <div class="brand"><i class="bi bi-grid-fill"></i> Portal de Evaluaciones - Combuses S.A</div>
+    <a href="#" class="nav-link active" id="menu-conductores"><i class="bi bi-person-badge"></i>Evaluación Conductores</a>
+    <a href="#" class="nav-link" id="menu-capacitador"><i class="bi bi-person-video2"></i>Evaluación al Capacitador</a>
+    <a href="#" class="nav-link logout" onclick="logout()"><i class="bi bi-box-arrow-right"></i>Salir</a>
+  </nav>
+  <div class="content-area" style="display:none;">
+    <div class="container">
+      <!-- Aquí pega los formularios tal como los tienes -->
+          <div id="form-conductores">
+        <div class="card p-4 mb-5">
+          <h4 class="mb-4 text-primary text-center"><i class="bi bi-person-badge"></i>Evaluación Conductores</h4>
+          <form id="conductores-formulario">
+            <div class="row g-2">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Nombre del usuario <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="nombre_usuario" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Cédula <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="cedula_usuario" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Cargo <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="cargo_usuario" value="Conductor" required readonly>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Fecha <span class="required-star">*</span></label>
+              <input type="date" class="form-control" name="fecha" required id="fechaConductores">
+            </div>
+            <div class="conteo"><span id="conteo-conductores"></span></div>
+            <div id="preguntas-conductores"></div>
+            <div class="mb-3">
+              <label class="form-label">Comentarios finales o sugerencias <span class="required-star">*</span></label>
+              <textarea class="form-control" name="comentarios" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Firma del usuario <span class="required-star">*</span></label>
+              <div class="firma-block">
+                <canvas id="firmaConductores" width="300" height="80"></canvas>
+                <div class="firma-actions">
+                  <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="limpiarFirma('Conductores')">Limpiar</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-success w-100 mt-3" type="submit">Enviar evaluación y descargar PDF</button>
+            <div id="conductores-alerta" class="alert mt-3" style="display:none;"></div>
+          </form>
+        </div>
+      </div>
+
+
+      
+      <!-- FORMULARIO EVALUACIÓN CONDUCTORES -->
+<div id="form-capacitador" style="display:none;">
+        <div class="card p-4 mb-5">
+          <h4 class="mb-4 text-primary text-center"><i class="bi bi-person-video2"></i> Evaluación al Capacitador</h4>
+          <form id="capacitador-formulario">
+            <div class="row g-2">
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Nombre del usuario <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="nombre_usuario" required>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Cédula <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="cedula_usuario" required>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Cargo <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="cargo_usuario" value="Conductor" required readonly>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Fecha <span class="required-star">*</span></label>
+                <input type="date" class="form-control" name="fecha" required id="fechaCapacitador">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nombre del Capacitador <span class="required-star">*</span></label>
+              <input type="text" class="form-control" name="nombre_capacitador" required>
+            </div>
+            <div class="section-title">1. OBJETIVOS</div>
+            <div class="mb-3">
+              <label class="form-label">1.1 Se alcanzaron los objetivos de la actividad <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p1" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p1" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p1" value="Regular"> Regular</label>
+                <label><input type="radio" name="p1" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">1.2 La actividad cubrió sus expectativas y necesidades <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p2" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p2" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p2" value="Regular"> Regular</label>
+                <label><input type="radio" name="p2" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">1.3 Estas actividades son útiles para usted <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p3" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p3" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p3" value="Regular"> Regular</label>
+                <label><input type="radio" name="p3" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">1.4 Le fue fácil mantener la atención e interés <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p4" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p4" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p4" value="Regular"> Regular</label>
+                <label><input type="radio" name="p4" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="section-title">2. CONTENIDOS</div>
+            <div class="mb-3">
+              <label class="form-label">2.1 Los temas desarrollados le parecen de utilidad <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p5" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p5" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p5" value="Regular"> Regular</label>
+                <label><input type="radio" name="p5" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">2.2 El desarrollo de los temas tuvo secuencia lógica <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p6" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p6" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p6" value="Regular"> Regular</label>
+                <label><input type="radio" name="p6" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">2.3 Los contenidos son aplicables a su vida o trabajo <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p7" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p7" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p7" value="Regular"> Regular</label>
+                <label><input type="radio" name="p7" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="section-title">3. INSTRUCTOR / FACILITADOR (A)</div>
+            <div class="mb-3">
+              <label class="form-label">3.1 Hizo sentir en confianza a los participantes <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p8" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p8" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p8" value="Regular"> Regular</label>
+                <label><input type="radio" name="p8" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">3.2 Motivó la participación y el diálogo <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p9" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p9" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p9" value="Regular"> Regular</label>
+                <label><input type="radio" name="p9" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">3.3 Escuchó y respetó los diferentes puntos de vista <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p10" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p10" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p10" value="Regular"> Regular</label>
+                <label><input type="radio" name="p10" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">3.4 Fue claro y ordenado en su exposición <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p11" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p11" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p11" value="Regular"> Regular</label>
+                <label><input type="radio" name="p11" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">3.5 Resolvió dudas de los participantes <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p12" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p12" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p12" value="Regular"> Regular</label>
+                <label><input type="radio" name="p12" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">3.6 Utilizó ejemplos prácticos <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p13" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p13" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p13" value="Regular"> Regular</label>
+                <label><input type="radio" name="p13" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="section-title">4. MATERIAL Y MEDIOS AUDIOVISUALES</div>
+            <div class="mb-3">
+              <label class="form-label">4.1 El material utilizado fue claro y ordenado <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p14" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p14" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p14" value="Bueno"> Bueno</label>
+                <label><input type="radio" name="p14" value="Regular"> Regular</label>
+                <label><input type="radio" name="p14" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">4.2 El material utilizado fue nítido y de calidad <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p15" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p15" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p15" value="Bueno"> Bueno</label>
+                <label><input type="radio" name="p15" value="Regular"> Regular</label>
+                <label><input type="radio" name="p15" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">4.3 El equipo audiovisual utilizado fue el adecuado <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p16" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p16" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p16" value="Bueno"> Bueno</label>
+                <label><input type="radio" name="p16" value="Regular"> Regular</label>
+                <label><input type="radio" name="p16" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="section-title">5. SERVICIOS</div>
+            <div class="mb-3">
+              <label class="form-label">5.1 Se sintió bien atendido <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p17" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p17" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p17" value="Bueno"> Bueno</label>
+                <label><input type="radio" name="p17" value="Regular"> Regular</label>
+                <label><input type="radio" name="p17" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">5.2 El local le pareció cómodo y adecuado <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p18" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p18" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p18" value="Bueno"> Bueno</label>
+                <label><input type="radio" name="p18" value="Regular"> Regular</label>
+                <label><input type="radio" name="p18" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">5.3 El mobiliario le pareció adecuado <span class="required-star">*</span></label>
+              <div class="scale-group">
+                <label><input type="radio" name="p19" value="Excelente" required> Excelente</label>
+                <label><input type="radio" name="p19" value="Muy Bueno"> Muy Bueno</label>
+                <label><input type="radio" name="p19" value="Bueno"> Bueno</label>
+                <label><input type="radio" name="p19" value="Regular"> Regular</label>
+                <label><input type="radio" name="p19" value="Deficiente"> Deficiente</label>
+              </div>
+            </div>
+            <div class="section-title">COMENTARIOS Y/O SUGERENCIAS</div>
+            <div class="mb-3">
+              <label class="form-label">¿Qué debemos mejorar? <span class="required-star">*</span></label>
+              <textarea class="form-control" name="comentarios" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Firma del usuario <span class="required-star">*</span></label>
+              <div class="firma-block">
+                <canvas id="firmaCapacitador" width="300" height="80"></canvas>
+                <div class="firma-actions">
+                  <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="limpiarFirma('Capacitador')">Limpiar</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-success w-100 mt-3" type="submit">Enviar evaluación y descargar PDF</button>
+            <div id="capacitador-alerta" class="alert mt-3" style="display:none;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+
+  <script src="apps.js"></script>
+</body>
+</html>
